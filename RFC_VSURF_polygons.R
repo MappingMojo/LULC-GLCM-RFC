@@ -31,8 +31,9 @@
 #===========================================================================================
   
   setwd("D:/R_Data Analysis/LUC")
-  file.edit(file.path("~", ".Rprofile"))  #invisible(utils::memory.limit(size = 60000))
-  
+  file.edit(file.path("~", ".Rprofile"))  
+  #in R.profile attempt to increase memory by running ##invisible(utils::memory.limit(size = 0000))
+
   # Start the clock!
   ptm <- proc.time()
 
@@ -493,7 +494,7 @@
   result$byClass["Recall"]
   result$byClass["F1"]
   
-  # Stop the clock
+  # Stop the clock- shows time the whole process has been running
   proc.time() - ptm
 #==========================================================================================
 ##################################### THE END ############################################
