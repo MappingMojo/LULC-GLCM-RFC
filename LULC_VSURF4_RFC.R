@@ -248,7 +248,7 @@
   lineP                                 = ggplot(ident.MSE,aes(x=VarNum,y=OOB)) + geom_line(color="black",size=0.7)
   lineP                                 = lineP + geom_vline(xintercept=length(thesis.vsurf$varselect.pred),color="gold",size=0.5)
   lineP                                 = lineP + geom_vline(xintercept=length(thesis.vsurf$varselect.interp),linetype="dotted", color="orange",size=0.5)
-  lineP                                 = lineP + geom_vline(xintercept=length(thesis.vsurf$varselect.thres),linetype="dotted", color="red",size=0.5)
+  #lineP                                 = lineP + geom_vline(xintercept=length(thesis.vsurf$varselect.thres),linetype="dotted", color="red",size=0.5)
   lineP                                 = lineP + annotate("text",x=(xintercept=length(thesis.vsurf$varselect.pred)+1),y=0.50,label="Prediction",vjust=0.7,family="sans",fontface=1,size=5,color="gold",angle=90)
   lineP                                 = lineP + annotate("text",x=(xintercept=length(thesis.vsurf$varselect.interp)+1),y=0.50,label="Interpretation",vjust=0.7,family="sans",fontface=1,size=5,color="orange",angle=90)
   lineP                                 = lineP + annotate("text",x=(xintercept=length(thesis.vsurf$varselect.thres)+1),y=0.70,label="Threshold",vjust=0.7,family="sans",fontface=1,size=5,color="red",angle=90)
@@ -267,6 +267,24 @@
   #subset VSURF selected variables
   infileRF <- infileVS[[thesis.vsurf$varselect.pred]]
   infileRF
+
+  ##===========================================================================================
+  ##For land use classification
+  ##===========================================================================================
+  ##subset VSURF selected variables
+  #infileR <- infileVS[[thesis.vsurf$varselect.pred]]
+  #infileR
+
+  ##Read/input reclassified LCC data
+  #files <- list.files(path="D:/R_Data Analysis/LCC", pattern="LCC.tif", all.files=FALSE, full.names=TRUE,recursive=TRUE)
+  #allInfo = image_info(image_read(files))
+  ##Attach the file names
+  #allInfo$fileName = files
+  #LCC <- stack(files)
+  
+  ##Combine the datasets LCC+VSURF variables 
+  #infileRF <- stack(LCC, infileR)
+  #infileRF
   
   selection<-c(1:nlayers(infileRF)) 
   NumIterations<-1                #number of times to run the classification
@@ -317,7 +335,7 @@
     varImpPlot(r_forest)
     
     #=========================================================================================
-    #Evaluate the impact of the ntree on the accuracy
+    #Evaluate the impact of the ntree on the accuracy (change classes for land use classification)
     #========================================================================================
     tree_nr_evaluation <-data.frame(
       Trees=rep(1:nrow(r_forest$err.rate), times=5),
