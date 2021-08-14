@@ -33,6 +33,7 @@
   
   setwd("D:/R_Data Analysis/LUC")
   file.edit(file.path("~", ".Rprofile"))
+  #in R.profile attempt to increase memory by running ##invisible(utils::memory.limit(size = 0000))
   
   # Start the clock!
   ptm <- proc.time()
