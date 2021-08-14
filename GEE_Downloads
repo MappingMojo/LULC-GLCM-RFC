@@ -1,0 +1,47 @@
+//load the shapfile for area you are downloading data
+var aoi: Table users/XXX/XXX
+
+//in GEE console 
+var aoi = ee.FeatureCollection(aoi);
+Map.addLayer({eeObject:aoi, name: "table"})
+Map.centerObject(aoi,8);
+
+//Display the shapefile into the interactive map
+Map.addLayer(aoi);
+//Display the view to the center of the screen and scale the view
+Map.centerObject(aoi,10);
+
+//select GEE image product id, select column with the data you are interested in and period of interest clipped to aoi
+var collection = ee.ImageCollection('MODIS/006/MOD11A1')  
+  .select('LST_Night_1km')                                
+  .filterDate('2019-01-01', '2019-12-31')                 
+  .filterBounds(aoi);
+
+var LSTImage = collection.mean(); // select mean across each period can change to max, median etc for the period of interest
+
+//visualize image
+var LSTVis = {
+  min: 13000.0,
+  max: 16500.0,
+  palette: [
+    '040274', '040281', '0502a3', '0502b8', '0502ce', '0502e6',
+    '0602ff', '235cb1', '307ef3', '269db1', '30c8e2', '32d3ef',
+    '3be285', '3ff38f', '86e26f', '3ae237', 'b5e22e', 'd6e21f',
+    'fff705', 'ffd611', 'ffb613', 'ff8b13', 'ff6e08', 'ff500d',
+    'ff0000', 'de0101', 'c21301', 'a71001', '911003'
+  ],
+};
+
+Map.centerObject(aoi, 7); // zoom in to the defined area
+Map.addLayer(collection.mean(), LSTVis, 'LST image'); // set map to hybrid backdrop
+Map.addLayer(LSTImage, LSTVis, 'MODIS LST NIGHT 2019');
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+  image:LSTImage.clip(aoi),
+  description:'NMA_MODIS_LST_NIGHT_2019', //file name
+  folder:'FolderName' 
+});  //folder in google drive to save file 
+
+
+
