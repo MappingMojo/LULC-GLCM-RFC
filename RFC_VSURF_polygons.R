@@ -1,6 +1,6 @@
 #This implementation of the Random Forest algorithm has been adapted from 
 # Millard and Richardson, Remote Sens. 2015, 7(7), 8489-8515; doi:10.3390/rs70708489
-##source: https://github.com/robingenuer/VSURF/commit/7c8d1243d39a83696690779668ea4cc217caca37
+##normalize bands: source: https://github.com/robingenuer/VSURF/commit/7c8d1243d39a83696690779668ea4cc217caca37
 
   #install packages
   install.packages('sp')
