@@ -72,7 +72,43 @@
   #======================================================================================================
   #join the datasets
   
-  infileVS <- stack(spectral,NDVI, s)
+  infile <- stack(spectral,NDVI, s)
+
+ #===============================================================================================================
+  #Normalize raster bands
+  #source: https://stackoverflow.com/questions/44266752/replace-specific-value-in-each-band-of-raster-brick-in-r  
+  #===============================================================================================================  
+  
+  #normalize bands of new dataset
+  norm <- function(x){(x-min)/(max-min)}
+  
+  for(j in 1:nlayers(infile)){
+    
+    cat(paste("Currently processing layer:", j,"/",nlayers(infile), "\n"))
+    
+    min <- cellStats(infile[[j]],'min')
+    max <- cellStats(infile[[j]],'max')
+    
+    #initialize cluster
+    #number of cores to use for clusterR function (max recommended: ncores - 1)
+    beginCluster(2)
+    
+    #normalize
+    infile[[j]] <- clusterR(infile[[j]], calc, args=list(fun=norm), export=c('min',"max"))
+    
+    #end cluster
+    endCluster()
+  }
+  
+  infileVS <- stack(infile) 
+  infileVS
+  #reset normalized raster layer names to original names
+  
+  #infile <- infileVS[[thesis.vsurf$varselect.pred]]
+  infile <- stack(spectral,NDVI, s)
+  infile
+  names(infileVS) = names(infile) 
+  names(infileVS)
   
   #==========================================================================================
   #Input the training data  
@@ -130,7 +166,7 @@
   x=training_predictors
   y=training_response
   thesis.vsurf<- VSURF(x, y, ntree = 2000, verbose=TRUE, RFimplem = "randomForest", parallel = FALSE)
-  # nfor.thres=32,nfor.interp=16,nfor.pred=8)#,ncores=20)  
+                       # ,nfor.thres=32,nfor.interp=16,nfor.pred=8)#,ncores=20)  
   thesis.vsurf
   summary(thesis.vsurf)
   plot(thesis.vsurf, step = "thres", imp.sd = FALSE, var.names = TRUE, ylim = c(0, 2e-4))
@@ -227,74 +263,9 @@
   #===========================================================================================
   #Set up RFC model including splitting training and validation data
   #===========================================================================================
-  #subset selected variables
-  
-  infile <- infileVS[[thesis.vsurf$varselect.pred]]
-  infile
-  
-  #======================================================================================================
-  #Read input RGB+NIR data
-  
-  files <- list.files(path="D:/R_Data Analysis/LCC/Infile", pattern="*.tif", all.files=FALSE, full.names=TRUE,recursive=TRUE)
-  allInfo = image_info(image_read(files))
-  
-  #Attach the file names
-  allInfo$fileName = files
-  s <- stack(files)
-  
-  #======================================================================================================
-  #Read input NDVI data
-  
-  files <- list.files(path="D:/Thesis/Data/Final1/MS_NDVI", pattern="ndvi_10m.tif", all.files=FALSE, full.names=TRUE,recursive=TRUE)
-  allInfo = image_info(image_read(files))
-  allInfo$fileName = files
-  NDVI <- stack(files)
-  bb <- extent(239999, 288999, 9840500, 9871930)
-  extent(NDVI) <- bb
-  NDVI <- setExtent(NDVI, bb)
-  names(NDVI)<- c("NDVI")
-  
-  #======================================================================================================
-  #join the datasets
-  
-  infile <- stack(NDVI, s)
-  
-
-  #===============================================================================================================
-  #Normalize raster bands
-  #source: https://stackoverflow.com/questions/44266752/replace-specific-value-in-each-band-of-raster-brick-in-r  
-  #===============================================================================================================  
-  
-  #normalize bands of new dataset
-  norm <- function(x){(x-min)/(max-min)}
-  
-  for(j in 1:nlayers(infile)){
-    
-    cat(paste("Currently processing layer:", j,"/",nlayers(infile), "\n"))
-    
-    min <- cellStats(infile[[j]],'min')
-    max <- cellStats(infile[[j]],'max')
-    
-    #initialize cluster
-    #number of cores to use for clusterR function (max recommended: ncores - 1)
-    beginCluster(2)
-    
-    #normalize
-    infile[[j]] <- clusterR(infile[[j]], calc, args=list(fun=norm), export=c('min',"max"))
-    
-    #end cluster
-    endCluster()
-  }
-  
-  infileRF <- stack(infile) 
+  #subset VSURF selected variables
+  infileRF <- infileVS[[thesis.vsurf$varselect.pred]]
   infileRF
-  #reset normalized raster layer names to original names
-  
-  #infile <- infileVS[[thesis.vsurf$varselect.pred]]
-  infile <- stack(NDVI, s)
-  infile
-  names(infileRF) = names(infile) 
-  names(infileRF)
   
   selection<-c(1:nlayers(infileRF)) 
   NumIterations<-1                #number of times to run the classification
@@ -358,16 +329,6 @@
                 r_forest$err.rate[, "4"]))
     
     ggplot(data=tree_nr_evaluation, aes(x=Trees, y=Error)) + geom_line(aes(color=Type))
-    
-    # tree_nr_evaluation <-data.frame(
-    #   Trees=rep(1:nrow(r_forest$err.rate), times=3), 
-    #   Type=rep(c("OOB", "1", "2"),
-    #            each=nrow(r_forest$err.rate)),
-    #   Error = c(r_forest$err.rate[, "OOB"],
-    #             r_forest$err.rate[, "1"],
-    #             r_forest$err.rate[, "2"]))
-    # 
-    # ggplot(data=tree_nr_evaluation, aes(x=Trees, y=Error)) + geom_line(aes(color=Type))
     
     #=======================================================================================
     #Evaluate the impact of the mtry on the accuracy
