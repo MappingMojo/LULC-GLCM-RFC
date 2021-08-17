@@ -432,6 +432,24 @@
   
   # Stop the clock
   proc.time() - ptm
+
+ #Plot classification results 
+  install.packages('devtools')
+  library(devtools)
+  install.packages('lulcc')
+  library(lulcc)
+
+  #LCC
+  obs<- ObsLulcRasterStack(x=LCC,pattern="lu",categories=c(1,2),
+                            labels=c("NonBuilt","Built"),
+                            t=c(0))
+  plot(obs)
+ 
+  #LUC
+  #obs2<- ObsLulcRasterStack(x=outraster,pattern="lu",categories=c(1,2,3,7,8,9),
+  #                         labels=c("High-mid Density","Low Density", "Non-Residential", "Deprived I", "Deprived II", "NonBuilt"),
+  #                         t=c(0))
+  #plot(obs2)
   #==========================================================================================
   ##################################### THE END ############################################
   #==========================================================================================
